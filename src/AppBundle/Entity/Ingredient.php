@@ -31,6 +31,7 @@ class Ingredient
 
     /**
      * @ORM\ManyToMany(targetEntity="Meal")
+     * @ORM\OrderBy({"name"="ASC"})
      * @var Meal[] $meals
      */
     private $meals;
@@ -82,7 +83,4 @@ class Ingredient
     {
         $this->meals = $meals;
     }
-
-
-
 }
