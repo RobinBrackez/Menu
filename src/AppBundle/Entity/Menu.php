@@ -30,11 +30,10 @@ class Menu
 
 
     /**
-     * @ORM\ManyToMany(targetEntity="Meal")
-     * @ORM\JoinTable(name="meal_menu")
-     * @var Meal[] $meals;
+     * @ORM\ManyToOne(targetEntity="Meal")
+     * @var Meal $meal;
      */
-    private $meals;
+    private $meal;
 
     /**
      * @return int
@@ -71,17 +70,17 @@ class Menu
     /**
      * @return Meal[]
      */
-    public function getMeals()
+    public function getMeal()
     {
-        return $this->meals;
+        return $this->meal;
     }
 
     /**
-     * @param Meal[] $meals
+     * @param Meal[] $meal
      */
-    public function setMeals($meals)
+    public function setMeal($meal)
     {
-        $this->meals = $meals;
+        $this->meal = $meal;
     }
 
 

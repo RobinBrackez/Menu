@@ -136,16 +136,18 @@ class MenuController extends Controller
     protected function getMealsForm()
     {
         $mealsForm = $this->createFormBuilder()
-            ->add('meals', EntityType::class, array(
+            ->add('meal', EntityType::class, array(
                 // looks for choices from this entity
                 'class' => Meal::class,
 
                 // uses the User.username property as the visible option string
                 'choice_label' => 'name',
+                'choice_value' => 'id',
 
                 // used to render a select box, check boxes or radios
                 'multiple' => false,
                 'expanded' => false,
+                'required'   => false,
             ))
             ->add('menu', HiddenType::class)
             ->setAction($this->generateUrl("menu-set-meal"))

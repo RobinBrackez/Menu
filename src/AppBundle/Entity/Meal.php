@@ -23,9 +23,9 @@ class Meal
     private $id;
 
 
+
     /**
-     * @ORM\ManyToMany(targetEntity="Menu")
-     * @var Menu[] $menus
+     * @ORM\OneToMany(targetEntity="Menu", mappedBy="meal")
      */
     private $menus;
 

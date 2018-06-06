@@ -13,13 +13,11 @@
                         {{ menu.date|date("d-m-Y", false) }}
                     </div>
                     <div class="col-sm">
-                        {%  for meal in menu.getMeals() %}
-                            {{ meal.name }}
-                        {% endfor %}
-                    </div>
-                    <div class="col-sm">
+                        {% if (menu.meal) %}
+                            {{ menu.meal.name }}
+                        {% endif %}
                         {{ form_start(mealFormView) }}
-                        {{ form_widget(mealFormView.meals, {value: menu.meals}) }}
+                        {{ form_widget(mealFormView.meal, {value: 1}) }}
                         {{ form_widget(mealFormView.menu, {value: menu.id}) }}
                         {{ form_widget(mealFormView.save) }}
                         {{ form_end(mealFormView) }}
