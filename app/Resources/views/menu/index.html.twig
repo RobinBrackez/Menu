@@ -2,9 +2,17 @@
 
 
 {% block body %}
-            {% for menu in menus %}
 
-                {% set mealFormView = mealForm.createView %}
+    {% for msg in app.session.flashBag.get('success') %}
+        <div class="alert alert-success" role="alert">
+            {{ msg }}
+        </div>
+    {% endfor %}
+
+            {% for menuObject in menuData %}
+
+                {% set menuFormView = menuObject['form'].createView %}
+                {% set menu = menuObject['menu'] %}
                 <div class="row">
                     <div class="col-sm">
                         {{ menu.date|date("l", false) }}
@@ -13,21 +21,13 @@
                         {{ menu.date|date("d-m-Y", false) }}
                     </div>
                     <div class="col-sm">
-                        {% if (menu.meal) %}
-                            {{ menu.meal.name }}
-                        {% endif %}
-                        {{ form_start(mealFormView) }}
-                            {{ form_widget(mealFormView.meal, {choice: (menu.meal ? menu.meal.id : null)}) }}
-                            {{ form_widget(mealFormView.id, {value: menu.id}) }}
-                            {{ form_widget(mealFormView.save) }}
-                        {{ form_end(mealFormView) }}
+                        {{ form_start(menuFormView) }}
+                            {{ form_widget(menuFormView) }}
+                        {{ form_end(menuFormView) }}
                     </div>
                 </div>
             {% endfor %}
 
-        {% for msg in app.session.flashBag.get('success') %}
-            {{ msg }}
-        {% endfor %}
 
         <a href="{{ path('meal_add_ingredient', {"id": 1, "ingredientName": "Kaas"}) }}">New ingredient to meal</a><br>
         <a href="{{ path('meal_add') }}">New meal</a><br>

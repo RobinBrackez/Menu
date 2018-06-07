@@ -5,7 +5,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Meal;
 use AppBundle\Entity\Menu;
-use AppBundle\Form\NewFormType;
+use AppBundle\Form\MenuForm;
 use AppBundle\Repository\IngredientRepository;
 use DateInterval;
 use DatePeriod;
@@ -15,6 +15,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,14 +32,24 @@ class MenuController extends Controller
     public function indexAction()
     {
         $this->createMenusForDates();
-        $mealsForm = $this->getMealsForm();
 
         /** @var Menu[] $menus */
         $menus = $this->getMenuRepository()->findAll();
 
+        $menuData = [];
+
+        foreach ($menus as $menu) {
+            $menuDataObject['form'] = $this->createForm(MenuForm::class, $menu, [
+                'action' => $this->generateUrl("menu-set-meal", ['menuId' => $menu->getId()]),
+                'method' => 'POST',
+            ]);
+            $menuDataObject['menu'] = $menu;
+
+            $menuData[] = $menuDataObject;
+        }
+
         return $this->render('menu/index.html.twig', array(
-            'menus' => $menus,
-            'mealForm' => $mealsForm
+            'menuData' => $menuData
         ));
     }
 
@@ -61,21 +72,23 @@ class MenuController extends Controller
     }
 
     /**
-     * @Route("/menu/new")
+     * @Route("/menu/{menuId}/set-meal/", name="menu-set-meal", methods={"POST"})
      */
-    public function newAction(Request $request)
+    public function setMeal(Request $request, $menuId)
     {
-        // creates a menu and gives it some dummy data for this example
-        $menu = new Menu();
-        $menu->setDate(new DateTime("now"));
+        $em = $this->getDoctrine()->getManager();
+        /** @var Menu $menu */
+        $menu = $em->getRepository('AppBundle:Menu')->find($menuId);
 
-        $form = $this->createFormBuilder($menu)
-            ->add('name', TextType::class)
-            ->add('description', TextType::class)
-            ->add('save', SubmitType::class, array('label' => 'Create Menu'))
-            ->getForm();
+        if (!$menu){
+            return $this->redirect('/');
+        }
 
+        $form = $this->createForm(MenuForm::class, $menu);
+        // only handles data on POST
         $form->handleRequest($request);
+
+
         if ($form->isSubmitted() && $form->isValid()) {
             // $form->getData() holds the submitted values
             // but, the original `$task` variable has also been updated
@@ -91,90 +104,9 @@ class MenuController extends Controller
             // actually executes the queries (i.e. the INSERT query)
             $entityManager->flush();
 
-            $this->addFlash('success', "Wow, it's added");
-
-            return new Response('Saved new product with id '.$menu->getId());
-        }
-
-
-        return $this->render('menu/new.html.twig', array(
-            'form' => $form->createView(),
-        ));
-    }
-
-    public function newfAction(Request $request)
-    {
-
-        $form = $this->createForm(NewFormType::class)->createView();
-
-        $form->handleRequest($request);
-
-
-    }
-
-    /**
-     * @return \Symfony\Component\Form\FormInterface
-     */
-    protected function getMealsForm()
-    {
-        $mealsForm = $this->createFormBuilder()
-            ->add('meal', EntityType::class, array(
-                // looks for choices from this entity
-                'class' => Meal::class,
-
-                // uses the User.username property as the visible option string
-                'choice_label' => 'name',
-                'choice_value' => 'id',
-
-                // used to render a select box, check boxes or radios
-                'multiple' => false,
-                'expanded' => false,
-                'required'   => false,
-//                'query_builder' => function(IngredientRepository $repo) {
-//
-//                }
-            ))
-//            ->add('meal', null, array( // with null Symfony will guess
-//                'placeholder' => "Choose a subfamily"
-//            ))
-            ->add('id', HiddenType::class)
-            ->setAction($this->generateUrl("menu-set-meal"))
-            ->add('save', SubmitType::class, array('label' => 'Save'))
-            ->getForm();
-        return $mealsForm;
-    }
-
-    /**
-     * @Route("/menu/set-meal/", name="menu-set-meal")
-     */
-    public function setMeal(Request $request)
-    {
-        $mealForm = $this->getMealsForm();
-
-        $mealForm->handleRequest($request);
-
-        if ($mealForm->isSubmitted() && $mealForm->isValid()) {
-            // $form->getData() holds the submitted values
-            // but, the original `$task` variable has also been updated
-            $menuData = $mealForm->getData();
-
-            // you can fetch the EntityManager via $this->getDoctrine()
-            // or you can add an argument to your action: createAction(EntityManagerInterface $entityManager)
-            $entityManager = $this->getDoctrine()->getManager();
-
-            $menu = $this->getDoctrine()
-                ->getRepository(Menu::class)
-                ->find($menuData['id']);
-
-            $menu->setMeal($menuData['meal']);
-
-            // tells Doctrine you want to (eventually) save the Product (no queries yet)
-            $entityManager->persist($menu);
-
-            // actually executes the queries (i.e. the INSERT query)
-            $entityManager->flush();
-
-            return new Response('Saved new menu with id '. $menu->getId());
+            $session = new Session();
+            $session->getFlashBag()->add('success', 'Menu updated. You now eat ' . $menu->getMeal()->getName());
+            return $this->redirect('/');
         }
     }
 
