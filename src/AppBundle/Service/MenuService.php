@@ -15,17 +15,21 @@ class MenuService
     /** @var EntityManager $entityManager */
     private $entityManager;
 
+    /** @var Menu[] $menus */
+    private $menus;
+
     /**
      * MenuService constructor.
      */
     public function __construct(EntityManager $entityManager)
     {
         $this->entityManager = $entityManager;
+        $this->menus = [];
     }
 
     public function getActiveMenus()
     {
-        return $this->getMenuRepository()->findAll();
+        return $this->menus;
     }
 
     /**
@@ -70,15 +74,9 @@ class MenuService
                 }
             }
             if (!$found) {
-
-                $menu = new Menu();
-                $menu->setDate($date);
-                // tells Doctrine you want to (eventually) save the Product (no queries yet)
-                $this->entityManager->persist($menu);
-
-                // actually executes the queries (i.e. the INSERT query)
-                $this->entityManager->flush();
+                $menu =$this->createMenuForDate($date);
             }
+            $this->menus[] = $menu;
         }
     }
 
@@ -90,5 +88,22 @@ class MenuService
     {
         return $this->entityManager
             ->getRepository(Menu::class);
+    }
+
+    /**
+     * @param $date
+     * @return Menu
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    protected function createMenuForDate($date)
+    {
+        $menu = new Menu();
+        $menu->setDate($date);
+        // tells Doctrine you want to (eventually) save the Product (no queries yet)
+        $this->entityManager->persist($menu);
+
+        // actually executes the queries (i.e. the INSERT query)
+        $this->entityManager->flush();
+        return $menu;
     }
 }

@@ -83,5 +83,10 @@ class Menu
         $this->meal = $meal;
     }
 
+    public function isToday()
+    {
+        $dateInterval = $this->getDate()->diff(new DateTime());
+        return $dateInterval->days === 0 && $dateInterval->h > 12;
+    }
 
 }

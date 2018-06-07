@@ -18,6 +18,9 @@
                         {{ menu.date|date("l", false) }}
                     </div>
                     <div class="col-sm">
+                        {% if (menu.isToday) %}
+                            <b>TODAY</b>
+                        {% endif %}
                         {{ menu.date|date("d-m-Y", false) }}
                     </div>
                     <div class="col-sm">
