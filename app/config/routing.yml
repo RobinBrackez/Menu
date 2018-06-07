@@ -6,3 +6,6 @@ homepage:
     path: /
     defaults:
         _controller: AppBundle:Menu:index
+
+fos_user:
+    resource: "@FOSUserBundle/Resources/config/routing/all.xml"

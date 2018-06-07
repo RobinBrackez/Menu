@@ -17,13 +17,17 @@
                             {{ menu.meal.name }}
                         {% endif %}
                         {{ form_start(mealFormView) }}
-                        {{ form_widget(mealFormView.meal, {value: 1}) }}
-                        {{ form_widget(mealFormView.menu, {value: menu.id}) }}
-                        {{ form_widget(mealFormView.save) }}
+                            {{ form_widget(mealFormView.meal, {choice: (menu.meal ? menu.meal.id : null)}) }}
+                            {{ form_widget(mealFormView.id, {value: menu.id}) }}
+                            {{ form_widget(mealFormView.save) }}
                         {{ form_end(mealFormView) }}
                     </div>
                 </div>
             {% endfor %}
+
+        {% for msg in app.session.flashBag.get('success') %}
+            {{ msg }}
+        {% endfor %}
 
         <a href="{{ path('meal_add_ingredient', {"id": 1, "ingredientName": "Kaas"}) }}">New ingredient to meal</a><br>
         <a href="{{ path('meal_add') }}">New meal</a><br>

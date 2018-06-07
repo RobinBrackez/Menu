@@ -36,6 +36,10 @@ class Ingredient
      */
     private $meals;
 
+    private $shopsAvailable;
+
+    private $probablity;
+
     /**
      * @return int
      */

@@ -5,6 +5,8 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Meal;
 use AppBundle\Entity\Menu;
+use AppBundle\Form\NewFormType;
+use AppBundle\Repository\IngredientRepository;
 use DateInterval;
 use DatePeriod;
 use DateTime;
@@ -40,20 +42,6 @@ class MenuController extends Controller
         ));
     }
 
-
-// if you have multiple entity managers, use the registry to fetch them
-    public function editAction()
-    {
-        $menu = $this->getMenuRepository()
-            ->find($productId);
-
-        if (!$menu) {
-            throw $this->createNotFoundException(
-                'No menu found for id '.$productId
-            );
-        }
-    }
-
     /**
      * @return \Doctrine\Common\Persistence\ObjectRepository
      */
@@ -70,24 +58,6 @@ class MenuController extends Controller
     {
         return $this->getDoctrine()
             ->getRepository(Meal::class);
-    }
-
-
-    public function updateAction($menuId)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $menu = $entityManager->getRepository(Menu::class)->find($menuId);
-
-        if (!$menu) {
-            throw $this->createNotFoundException(
-                'No product found for id '.$menuId
-            );
-        }
-
-        $menu->setName('New menu name!');
-        $entityManager->flush();
-
-        return $this->redirectToRoute('homepage');
     }
 
     /**
@@ -121,6 +91,8 @@ class MenuController extends Controller
             // actually executes the queries (i.e. the INSERT query)
             $entityManager->flush();
 
+            $this->addFlash('success', "Wow, it's added");
+
             return new Response('Saved new product with id '.$menu->getId());
         }
 
@@ -128,6 +100,16 @@ class MenuController extends Controller
         return $this->render('menu/new.html.twig', array(
             'form' => $form->createView(),
         ));
+    }
+
+    public function newfAction(Request $request)
+    {
+
+        $form = $this->createForm(NewFormType::class)->createView();
+
+        $form->handleRequest($request);
+
+
     }
 
     /**
@@ -148,8 +130,14 @@ class MenuController extends Controller
                 'multiple' => false,
                 'expanded' => false,
                 'required'   => false,
+//                'query_builder' => function(IngredientRepository $repo) {
+//
+//                }
             ))
-            ->add('menu', HiddenType::class)
+//            ->add('meal', null, array( // with null Symfony will guess
+//                'placeholder' => "Choose a subfamily"
+//            ))
+            ->add('id', HiddenType::class)
             ->setAction($this->generateUrl("menu-set-meal"))
             ->add('save', SubmitType::class, array('label' => 'Save'))
             ->getForm();
@@ -168,19 +156,25 @@ class MenuController extends Controller
         if ($mealForm->isSubmitted() && $mealForm->isValid()) {
             // $form->getData() holds the submitted values
             // but, the original `$task` variable has also been updated
-            $meal = $mealForm->getData();
+            $menuData = $mealForm->getData();
 
             // you can fetch the EntityManager via $this->getDoctrine()
             // or you can add an argument to your action: createAction(EntityManagerInterface $entityManager)
             $entityManager = $this->getDoctrine()->getManager();
 
+            $menu = $this->getDoctrine()
+                ->getRepository(Menu::class)
+                ->find($menuData['id']);
+
+            $menu->setMeal($menuData['meal']);
+
             // tells Doctrine you want to (eventually) save the Product (no queries yet)
-            $entityManager->persist($meal);
+            $entityManager->persist($menu);
 
             // actually executes the queries (i.e. the INSERT query)
             $entityManager->flush();
 
-            return new Response('Saved new meal with id '. $meal->getId());
+            return new Response('Saved new menu with id '. $menu->getId());
         }
     }
 
