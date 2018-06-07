@@ -1,4 +1,9 @@
 menu
 ====
 
-A Symfony project created on June 5, 2018, 3:09 pm.
+A Symfony exercise.
+
+Overview of what you want to eat on what day
+and what you need to buy for that and so.
+
+Unfinished
